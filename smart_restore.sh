@@ -153,6 +153,7 @@ install_packages() {
     local backup_dir="$1"
     local success=0
     local failed=0
+    local failed_list=""
     
     if [ ! -f "$backup_dir/installed_packages.txt" ]; then
         echo "Package list not found"
@@ -166,6 +167,7 @@ install_packages() {
                 success=$((success + 1))
             else
                 failed=$((failed + 1))
+                failed_list="$failed_list\n  - $package"
             fi
         fi
     done < "$backup_dir/installed_packages.txt"
@@ -173,6 +175,13 @@ install_packages() {
     echo ""
     echo "Successfully installed: $success packages"
     echo "Failed: $failed packages"
+    
+    # Вывод списка неустановленных пакетов
+    if [ $failed -gt 0 ]; then
+        echo ""
+        echo "=== FAILED PACKAGES LIST ==="
+        echo -e "$failed_list"
+    fi
 }
 
 # Установка внешнего пакета (универсальная функция)
@@ -232,18 +241,6 @@ install_argon_config() {
         "Argon Config" \
         "https://github.com/jerrykuku/luci-app-argon-config/releases/download/v0.9/luci-app-argon-config_0.9_all.ipk" \
         "--force-overwrite --force-depends"
-    
-    # Настройка темы
-    if [ $? -eq 0 ]; then
-        cat > /etc/uci-defaults/luci-argon-config << 'EOF'
-#!/bin/sh
-uci set luci.main.mediaurlbase='/luci-static/argon'
-uci commit luci
-exit 0
-EOF
-        chmod +x /etc/uci-defaults/luci-argon-config
-        sh /etc/uci-defaults/luci-argon-config
-    fi
 }
 
 # Запуск сервисов
@@ -307,8 +304,26 @@ echo "Press Ctrl+C to cancel or Enter to continue..."
 read
 
 # Создание временной директории
-TEMP_DIR="/tmp/restore_$$"
+TEMP_DIR="/tmp/restore_$"
 mkdir -p $TEMP_DIR
+
+# Проверка интернета перед началом установки
+if ! check_and_fix_internet; then
+    echo ""
+    echo "=== WARNING: No internet connection ==="
+    echo "Package installation will be skipped."
+    echo "Only configuration files will be restored."
+    echo ""
+    echo "Press Ctrl+C to cancel or Enter to continue with config restore only..."
+    read
+    
+    # Только восстановление конфигурации без установки пакетов
+    restore_configuration "$BACKUP_FILE" "$TEMP_DIR"
+    start_services
+    print_status
+    rm -rf $TEMP_DIR
+    exit 0
+fi
 
 # Установка пакетов (каждая функция обработает ошибки сама)
 prepare_system
@@ -326,3 +341,4 @@ start_services
 
 # Отчет и очистка
 print_status
+rm -rf $TEMP_DIR
