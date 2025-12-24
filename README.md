@@ -96,8 +96,11 @@ chmod +x smart_restore.sh
 # 2. Запускаем восстановление (укажите имя вашего бэкапа)
 ./smart_restore.sh backup/openwrt_backup_YYYYMMDD_HHMMSS.tar.gz
 
-для установки пакетов поддержки модема и internet detector нудно добавить аргумент --modem
+# для установки пакетов поддержки модема и internet detector нудно добавить аргумент --modem
 ./smart_restore.sh backup/openwrt_backup_YYYYMMDD_HHMMSS.tar.gz --modem
+
+# для правки номера роутера в FRPC добавляем аргумент --frp (можно использовать вместе с --modem)
+./smart_restore.sh backup/openwrt_backup_YYYYMMDD_HHMMSS.tar.gz --frp
 
 # 3. Подтверждаем восстановление (нажмите Enter)
 ```
