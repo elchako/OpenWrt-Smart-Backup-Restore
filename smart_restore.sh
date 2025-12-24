@@ -1,10 +1,14 @@
 #!/bin/sh
 
 INSTALL_MODEM=0
+FRP_EDIT=0
 
 for arg in "$@"; do
     case "$arg" in
         --modem) INSTALL_MODEM=1 ;;
+    esac
+    case "$arg" in
+        --frp) FRP_EDIT=1 ;;
     esac
 done
 
@@ -329,6 +333,44 @@ install_modem_stuff() {
     return 0
 }
 
+# редактировать конфиг FRPC если вызван аргумент --frp
+edit_frp_number() {
+    printf "FRP: configure number"
+
+    # спросить N (две цифры)
+    while :; do
+        printf "Enter FRP number N (00-99): "
+        read -r FRP_N
+        case "$FRP_N" in
+            [0-9]|[0-9][0-9])
+                FRP_N=$(printf "%02d" "$FRP_N" 2>/dev/null || echo "$FRP_N")
+                break
+                ;;
+            *)
+                echo "Invalid N, expected 0..99"
+                ;;
+        esac
+    done
+
+    if [ ! -f /etc/frp/frpc.toml ]; then
+        echo "WARNING: /etc/frp/frpc.toml not found, skipping"
+        return 0
+    fi
+
+    sed -i -E \
+      -e 's/\bopenwrt-web-[0-9]{2}\b/openwrt-web-'"$FRP_N"'/g' \
+      -e 's/\brouter[0-9]{2}\b/router'"$FRP_N"'/g' \
+      -e 's/\bopenwrt-ssh-[0-9]{2}\b/openwrt-ssh-'"$FRP_N"'/g' \
+      -e 's/\bremotePort = 610[0-9]{2}\b/remotePort = 610'"$FRP_N"'/' \
+      /etc/frp/frpc.toml
+
+    [ -x /etc/init.d/frpc ] && /etc/init.d/frpc stop && /etc/init.d/frpc start
+    # чтение лога frpc
+    tail /var/log/frpc.log
+
+}
+
+
 
 # Финальный отчет
 print_status() {
@@ -407,6 +449,11 @@ install_podkop
 
 # Восстановление конфигурации (всегда)
 restore_configuration "$BACKUP_FILE" "$TEMP_DIR"
+
+# редактирование номер frpc если передан аргумент --frp
+if [ "$FRP_EDIT" -eq 1 ]; then
+    edit_frp_number
+fi
 
 # Запуск сервисов (всегда)
 start_services
