@@ -31,6 +31,12 @@ add_files() {
 # Инициализация списка файлов
 FILES_TO_BACKUP=""
 
+# добавить клиент frpc
+FRP_CLIENT="/usr/bin/frpc"
+
+# добавить конфиг frpc
+FRP_CONFIG="/etc/frp/frpc.toml"
+
 # 1. Измененные конфиг-файлы через opkg
 MODIFIED_CONFIGS=$(opkg list-changed-conffiles 2>/dev/null)
 add_files "Modified Config Files" "$MODIFIED_CONFIGS"
