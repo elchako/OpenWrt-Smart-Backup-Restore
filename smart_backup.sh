@@ -13,7 +13,7 @@ add_files() {
     local description="$1"
     local files="$2"
     local count=0
-    
+
     if [ -n "$files" ]; then
         echo "=== $description ==="
         for file in $files; do
@@ -33,9 +33,15 @@ FILES_TO_BACKUP=""
 
 # добавить клиент frpc
 FRP_CLIENT="/usr/bin/frpc"
+add_files "Add FRPC" "$FRP_CLIENT"
 
 # добавить конфиг frpc
 FRP_CONFIG="/etc/frp/frpc.toml"
+add_files "Add FRPC config" "$FRP_CONFIG"
+
+# добавить запускающий файл frpc
+FRP_AUTOSTART="/etc/init.d/frpc"
+add_files "Add FRPC init.d" "$FRP_AUTOSTART"
 
 # 1. Измененные конфиг-файлы через opkg
 MODIFIED_CONFIGS=$(opkg list-changed-conffiles 2>/dev/null)
