@@ -85,7 +85,7 @@ install_package() {
 install_dependencies() {
     echo "=== INSTALLING DEPENDENCIES ==="
     
-    for dep in curl jq coreutils-base64 luci-lua-runtime luci-compat luci-lib-ipkg; do
+    for dep in curl jq coreutils-base64 luci-lua-runtime luci-compat luci-lib-ipkg nano htop; do
         install_package "$dep"
     done
 }
@@ -121,6 +121,8 @@ restore_configuration() {
         */etc/inittab
         */etc/shinit
         */etc/nftables.d/*
+        */etc/frp/*
+        */usr/bin/frpc*
     "
     
     for pattern in $paths; do
@@ -228,20 +230,20 @@ install_podkop() {
 }
 
 # Установка Argon Theme
-install_argon_theme() {
-    install_external_package \
-        "Argon Theme" \
-        "https://github.com/jerrykuku/luci-theme-argon/releases/download/v2.3.2/luci-theme-argon_2.3.2-r20250207_all.ipk" \
-        "--force-depends"
-}
+# install_argon_theme() {
+#     install_external_package \
+#         "Argon Theme" \
+#         "https://github.com/jerrykuku/luci-theme-argon/releases/download/v2.3.2/luci-theme-argon_2.3.2-r20250207_all.ipk" \
+#         "--force-depends"
+# }
 
 # Установка Argon Config
-install_argon_config() {
-    install_external_package \
-        "Argon Config" \
-        "https://github.com/jerrykuku/luci-app-argon-config/releases/download/v0.9/luci-app-argon-config_0.9_all.ipk" \
-        "--force-overwrite --force-depends"
-}
+# install_argon_config() {
+#     install_external_package \
+#         "Argon Config" \
+#         "https://github.com/jerrykuku/luci-app-argon-config/releases/download/v0.9/luci-app-argon-config_0.9_all.ipk" \
+#         "--force-overwrite --force-depends"
+# }
 
 # Запуск сервисов
 start_services() {
@@ -259,6 +261,11 @@ start_services() {
         /etc/init.d/sing-box enable
         /etc/init.d/sing-box start
     fi
+
+    if [ -f "/etc/init.d/frpc" ]; then
+        /etc/init.d/frpc enable
+        /etc/init.d/frpc start
+    fi
     
     /etc/init.d/uhttpd restart
 }
@@ -268,8 +275,8 @@ print_status() {
     echo ""
     echo "=== RESTORE COMPLETED ==="
     echo "Podkop: $( [ -f "/etc/init.d/podkop" ] && echo "✓" || echo "✗" )"
-    echo "Argon Theme: $(opkg list-installed | grep -q "luci-theme-argon" && echo "✓" || echo "✗")"
-    echo "Argon Config: $(opkg list-installed | grep -q "luci-app-argon-config" && echo "✓" || echo "✗")"
+#     echo "Argon Theme: $(opkg list-installed | grep -q "luci-theme-argon" && echo "✓" || echo "✗")"
+#     echo "Argon Config: $(opkg list-installed | grep -q "luci-app-argon-config" && echo "✓" || echo "✗")"
     echo "sing-box: $(opkg list-installed | grep -q "sing-box" && echo "✓" || echo "✗")"
     echo ""
     echo "System ready. Reboot if needed: reboot"
@@ -330,8 +337,8 @@ prepare_system
 install_dependencies
 install_packages "$BACKUP_DIR"
 install_podkop
-install_argon_theme
-install_argon_config
+# install_argon_theme
+# install_argon_config
 
 # Восстановление конфигурации (всегда)
 restore_configuration "$BACKUP_FILE" "$TEMP_DIR"
