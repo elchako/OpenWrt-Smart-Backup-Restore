@@ -303,6 +303,10 @@ install_modem_stuff() {
         "https://github.com/gSpotx2f/packages-openwrt/raw/master/current/internet-detector_1.7.1-r1_all.ipk" \
         "--force-reinstall" || return 1
 
+    install_external_package "internet-detector-mod-modem" \
+        "https://github.com/gSpotx2f/packages-openwrt/raw/master/current/internet-detector-mod-modem-restart_1.7.1-r1_all.ipk" \
+        "--force-reinstall" || return 1
+
     # enable+start
     if [ -x /etc/init.d/internet-detector ]; then
         /etc/init.d/internet-detector enable
