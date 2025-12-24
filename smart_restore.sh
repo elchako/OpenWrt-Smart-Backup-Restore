@@ -1,5 +1,23 @@
 #!/bin/sh
 
+INSTALL_MODEM=0
+
+for arg in "$@"; do
+    case "$arg" in
+        --modem) INSTALL_MODEM=1 ;;
+    esac
+done
+
+# BACKUPFILE — первый не-флаг аргумент
+BACKUPFILE=""
+for arg in "$@"; do
+    case "$arg" in
+        --*) ;;
+        *) BACKUPFILE="$arg"; break ;;
+    esac
+done
+
+
 # Проверка и настройка интернета
 check_and_fix_internet() {
     echo "=== CHECKING INTERNET CONNECTION ==="
@@ -263,6 +281,51 @@ set_timezone_moscow() {
     /etc/init.d/system restart
 }
 
+# установка пакетов для поддержки модема
+install_modem_stuff() {
+    # Пакеты из репозитория opkg
+    local pkgs="
+        luci-proto-modemmanager
+        kmod-usb-serial-wwan
+        kmod-usb-serial-option
+        kmod-usb-net-cdc-mbim
+        usbutils
+        kmod-mtd-rw
+        kmod-usb2
+    "
+
+    for p in $pkgs; do
+        install_package "$p" || return 1
+    done
+
+    # Пакеты с GitHub (ipk)
+    install_external_package "internet-detector" \
+        "https://github.com/gSpotx2f/packages-openwrt/raw/master/current/internet-detector_1.7.1-r1_all.ipk" \
+        "--force-reinstall" || return 1
+
+    # enable+start
+    if [ -x /etc/init.d/internet-detector ]; then
+        /etc/init.d/internet-detector enable
+        /etc/init.d/internet-detector start
+    else
+        service internet-detector enable 2>/dev/null
+        service internet-detector start 2>/dev/null
+    fi
+
+    install_external_package "luci-app-internet-detector" \
+        "https://github.com/gSpotx2f/packages-openwrt/raw/master/current/luci-app-internet-detector_1.7.1-r1_all.ipk" \
+        "--force-reinstall" || return 1
+
+    service rpcd restart 2>/dev/null || /etc/init.d/rpcd restart
+
+    install_external_package "luci-i18n-internet-detector-ru" \
+        "https://github.com/gSpotx2f/packages-openwrt/raw/master/current/luci-i18n-internet-detector-ru_1.7.1-r1_all.ipk" \
+        "--force-reinstall" || return 1
+
+    return 0
+}
+
+
 # Финальный отчет
 print_status() {
     echo ""
@@ -329,6 +392,11 @@ fi
 
 # Установка пакетов (каждая функция обработает ошибки сама)
 prepare_system
+
+if [ "$INSTALL_MODEM" -eq 1 ]; then
+    install_modem_stuff || echo "WARNING: modem install failed"
+fi
+
 install_dependencies
 install_packages "$BACKUP_DIR"
 install_podkop
