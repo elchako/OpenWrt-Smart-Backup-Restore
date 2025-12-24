@@ -6,6 +6,7 @@
 
 ### Скрипт бэкапа (`smart_backup.sh`)
 Автоматически сохраняет:
+- ✅ FRP клиент с конфигом
 - ✅ Все конфигурационные файлы из `/etc/config/`
 - ✅ Измененные системные конфиги (через `opkg list-changed-conffiles`)
 - ✅ SSH ключи (dropbear host keys)
@@ -24,8 +25,7 @@
 - ✅ Устанавливает все пакеты из списка
 - ✅ Устанавливает дополнительные компоненты:
   - [Podkop](https://github.com/itdoginfo/podkop) - удобное управление подписками VPN
-  - Argon Theme - современная тема для LuCI
-  - Argon Config - настройки темы
+  - nano htop
 - ✅ Перезапускает все необходимые сервисы
 - ✅ Работает даже без интернета (пропускает установку пакетов, но восстанавливает конфиги)
 
@@ -41,7 +41,7 @@ ssh root@192.168.1.1
 cd /root
 
 # 3. Скачиваем скрипт бэкапа
-wget https://raw.githubusercontent.com/lQwestl/OpenWrt-Smart-Backup-Restore/main/smart_backup.sh
+wget https://github.com/elchako/OpenWrt-Smart-Backup-Restore/raw/refs/heads/main/smart_backup.sh -O smart_backup.sh
 
 # 4. Делаем исполняемым
 chmod +x smart_backup.sh
@@ -57,6 +57,7 @@ chmod +x smart_backup.sh
 ### Шаг 2: Сохранение бэкапа
 
 Сохраните папку `/root/backup/` на компьютер любым удобным способом (SCP, WinSCP, FileZilla и т.д.)
+В linux (и возможно windows) можно с помощью `scp -O root@192.168.226.1:/root/backup/openwrt_backup_YYYYMMDD_HHMMSS.tar.gz .`
 
 ### Шаг 3: Обновление прошивки
 
@@ -76,13 +77,12 @@ cd /root
 
 **Вариант А: Скачать скрипт на роутер**
 ```bash
-wget https://raw.githubusercontent.com/lQwestl/OpenWrt-Smart-Backup-Restore/main/smart_restore.sh
+wget https://github.com/elchako/OpenWrt-Smart-Backup-Restore/raw/refs/heads/main/smart_restore.sh -O smart_restore.sh
 ```
 
 **Вариант Б: Создать скрипт вручную**
 ```bash
-vi smart_restore.sh
-# Или nano smart_restore.sh
+nano smart_restore.sh
 # Вставьте содержимое скрипта из GitHub
 # Сохраните и выйдите (:wq в vi или Ctrl+X в nano)
 ```
