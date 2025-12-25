@@ -304,11 +304,11 @@ install_modem_stuff() {
 
     # Пакеты с GitHub (ipk)
     install_external_package "internet-detector" \
-        "https://github.com/gSpotx2f/packages-openwrt/raw/master/current/internet-detector_1.7.1-r1_all.ipk" \
+        "https://github.com/gSpotx2f/packages-openwrt/blob/master/24.10/internet-detector_1.7.1-r1_all.ipk" \
         "--force-reinstall" || return 1
 
     install_external_package "internet-detector-mod-modem" \
-        "https://github.com/gSpotx2f/packages-openwrt/raw/master/current/internet-detector-mod-modem-restart_1.7.1-r1_all.ipk" \
+        "https://github.com/gSpotx2f/packages-openwrt/blob/master/24.10/internet-detector-mod-modem-restart_1.7.1-r1_all.ipk" \
         "--force-reinstall" || return 1
 
     # enable+start
@@ -321,13 +321,13 @@ install_modem_stuff() {
     fi
 
     install_external_package "luci-app-internet-detector" \
-        "https://github.com/gSpotx2f/packages-openwrt/raw/master/current/luci-app-internet-detector_1.7.1-r1_all.ipk" \
+        "https://github.com/gSpotx2f/packages-openwrt/blob/master/24.10/luci-app-internet-detector_1.7.1-r1_all.ipk" \
         "--force-reinstall" || return 1
 
     service rpcd restart 2>/dev/null || /etc/init.d/rpcd restart
 
     install_external_package "luci-i18n-internet-detector-ru" \
-        "https://github.com/gSpotx2f/packages-openwrt/raw/master/current/luci-i18n-internet-detector-ru_1.7.1-r1_all.ipk" \
+        "https://github.com/gSpotx2f/packages-openwrt/blob/master/24.10/luci-i18n-internet-detector-ru_1.7.1-r1_all.ipk" \
         "--force-reinstall" || return 1
 
     return 0
